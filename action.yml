@@ -1,12 +1,20 @@
-branding:
-  icon: book-open
-  color: orange
-description: "Utility Action that exports all GitHub Secrets to Environment Variables with less maintenance overhead"
 name: "Convert Github Secrets or GitHub Variables to Environment variables"
+description: "Utility Action that exports all GitHub Secrets to Environment Variables with less maintenance overhead"
+author: "Driblash Unipessoal Lda"
+
 inputs:
+  secrets:
+    required: true
+    description: "JSON representation of the GitHub variables or GitHub secrets, use provided placeholder"
+  add-prefix:
+    required: false
+    description: "Add a prefix to all secrets when exporting them as variables"
+  add-suffix:
+    required: false
+    description: "Add a suffix to all secrets when exporting them as variables"
   convert:
     required: false
-    description: "Converts secrets name to a specific string case (default: upper)"
+    description: "Converts secrets name to a specific string case (default: preserve)"
   exclude:
     required: false
     description: "CSV or Regex Expression of secrets that should not be exported"
@@ -16,24 +24,20 @@ inputs:
   override:
     required: false
     description: "Override existing environment variables (default: true)"
-  add-prefix:
-    required: false
-    description: "Add a prefix to all secrets when exporting them as variables"
-  add-suffix:
-    required: false
-    description: "Add a suffix to all secrets when exporting them as variables"
   remove-prefix:
     required: false
     description: "Remove a prefix from all secrets when exporting them as variables"
   remove-suffix:
     required: false
     description: "Remove a suffix from all secrets when exporting them as variables"
-  secrets:
-    required: true
-    description: "JSON representation of the GitHub variables or GitHub secrets, use provided placeholder"
   tracelog:
     required: false
     description: "Allow the action to emit verbose logs"
+
 runs:
   using: "node20"
   main: "dist/index.js"
+
+branding:
+  icon: activity
+  color: blue
