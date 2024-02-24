@@ -50,11 +50,11 @@ export default async function run(): Promise<void> {
       throw new Error(`
         Cannot parse JSON secrets. Are you running our action with "secrets" OR "vars" key value pair?
 
-        - uses: driblash/secrets-to-environment-variables-action@v2
+        - uses: driblash/secrets-to-environment-variables-action@v1
         with:
           secrets: \${{ toJSON(secrets) }}
 
-        - uses: driblash/secrets-to-environment-variables-action@v2
+        - uses: driblash/secrets-to-environment-variables-action@v1
           with:
           secrets: \${{ toJSON(vars) }}
       `)
