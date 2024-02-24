@@ -5,7 +5,10 @@ This Action reads your repository's GitHub Secrets and exports them as environme
 It is possible to control what secrets are imported and how they are exported as environment variables.
 
 - Include or exclude secrets (CSV or Regex)
-- Remove or add prefix a all exported environment variables
+- Add prefix to all exported environment variables
+- Add suffix to all exported environment variables
+- Remove prefix from all exported environment variables
+- Remove suffix from all exported environment variables
 - Override already existing variables (default is true)
 
 Original credit goes to [oNaiPs](https://github.com/oNaiPs/secrets-to-env-action).
@@ -65,19 +68,35 @@ To export secrets that start with a given string, you can use `include: PREFIX_.
 
 NOTE: If specified secret does not exist, it is ignored.
 
-### Add a prefix to exported secrets
+### Prefixing and Suffixing
+
+It is possible to add and remove prefixes and suffixes from all the secrets found by this action. Refer to [Processing Algorithm](#algorithm-pipeline)
+
+#### Add a prefix to exported secrets
 
 ```yaml
 steps:
 - uses: actions/checkout@v3
 - uses: driblash/secrets-to-environment-variables-action@v2
   with:
-    prefix: PREFIXED_
+    add-prefix: PREFIX_
     secrets: ${{ toJSON(secrets) }}
-- run: echo "Value of PREFIXED_MY_SECRET: $PREFIXED_MY_SECRET"
+- run: echo "Value of MY_SECRET: $PREFIX_MY_SECRET"
 ```
 
-### Remove a prefix (Recommended Usage)
+#### Add a suffix to exported secrets
+
+```yaml
+steps:
+- uses: actions/checkout@v3
+- uses: driblash/secrets-to-environment-variables-action@v2
+  with:
+    add-suffix: _SUFFIX
+    secrets: ${{ toJSON(secrets) }}
+- run: echo "Value of MY_SECRET: $MY_SECRET_SUFFIX"
+```
+
+#### Remove a prefix
 
 Remove a prefix to all exported secrets, if present.
 
@@ -86,10 +105,23 @@ steps:
 - uses: actions/checkout@v3
 - uses: driblash/secrets-to-environment-variables-action@v2
   with:
-    exclude: PREFIX2_.+
-    remove-prefix: PREFIX1_
+    remove-prefix: PREFIX_
     secrets: ${{ toJSON(secrets) }}
-- run: echo "Value of PREFIX1_MY_SECRET: $MY_SECRET"
+- run: echo "Value of PREFIX_MY_SECRET: $MY_SECRET"
+```
+
+#### Remove a suffix
+
+Remove a prefix to all exported secrets, if present.
+
+```yaml
+steps:
+- uses: actions/checkout@v3
+- uses: driblash/secrets-to-environment-variables-action@v2
+  with:
+    remove-suffix: _SUFFIX
+    secrets: ${{ toJSON(secrets) }}
+- run: echo "Value of MY_SECRET_SUFFIX: $MY_SECRET"
 ```
 
 ### Overrides already existing variables (default is **false**)
@@ -101,10 +133,9 @@ steps:
 - uses: actions/checkout@v3
 - uses: driblash/secrets-to-environment-variables-action@v2
   with:
-    override: false
+    override: true
     secrets: ${{ toJSON(secrets) }}
-- run: echo "Value of MY_SECRET: $MY_SECRET"
-Value of MY_SECRET: DONT_OVERRIDE
+- run: echo "Value of MY_SECRET: $MY_SECRET" # possibly another value
 ```
 
 ### Convert environment variables case
@@ -124,3 +155,20 @@ steps:
 ## Contributing
 
 Run `pnpm install`, apply desired changes. When you are done. Open a Pull Request and Request a Review. Before the code is pushed we will run `pnpm validate` to ensure the code is working as intended.
+
+## Algorithm Pipeline
+
+This can be seen as a pipeline of changes in the following order:
+
+- Read all secrets
+- Apply inclusion filter
+- Apply exclusion filter
+- For all Keys repeat
+  - Clone original Secret key
+  - Remove prefix from cloned key if present
+  - Remove suffix from cloned key if present
+  - Add prefix to cloned key
+  - Add suffix to cloned key
+  - Convert case if applicable
+  - Set Key unless key already exist and override is false
+  - Export cloned key as an environment variable with its associated value

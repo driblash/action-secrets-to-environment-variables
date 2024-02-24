@@ -30,15 +30,16 @@ export default async function run(): Promise<void> {
   let excludeList = ['github_token']
 
   try {
-    const convertStr: string = core.getInput('convert')
     const overrideStr: string = core.getInput('override')
 
-    const convert = convertStr.length ? convertStr : 'upper'
+    const convert = core.getInput('convert')
     const excludeListStr: string = core.getInput('exclude')
     const includeListStr: string = core.getInput('include')
-    const keyPrefix: string = core.getInput('prefix')
+    const addPrefix: string = core.getInput('add-prefix')
+    const addSuffix: string = core.getInput('add-suffix')
+    const removePrefix: string = core.getInput('remove-prefix')
+    const removeSuffix: string = core.getInput('remove-suffix')
     const override = overrideStr.length ? overrideStr === 'true' : false
-    const removePrefix: string = core.getInput('removeprefix')
     const secretsJson: string = core.getInput('secrets', { required: true })
 
     let secrets: Record<string, string>
@@ -74,8 +75,10 @@ export default async function run(): Promise<void> {
     info(
       `Using include list: ${includeList?.join(', ')}`,
       `Using exclude list: ${excludeList.join(', ')}`,
-      `Adding prefix: ${keyPrefix}`,
+      `Adding prefix: ${addPrefix}`,
+      `Adding suffix: ${addPrefix}`,
       `Removing prefix: ${removePrefix}`,
+      `Removing suffix: ${addPrefix}`,
       `Override: ${override}`,
       `Convert: ${convert}`,
     )
@@ -94,37 +97,67 @@ export default async function run(): Promise<void> {
       }
 
       let newKey = key
+
       if (removePrefix.length && key.startsWith(removePrefix)) {
         debug(`Will remove prefix from ${key}`)
 
         newKey = key.slice(removePrefix.length)
 
         debug(`Prefix removed from ${key} -> ${newKey}`)
-      } else if (keyPrefix.length) {
+      }
+
+      if (removeSuffix.length && key.endsWith(removeSuffix)) {
+        debug(`Will remove suffix from ${key}`)
+
+        newKey = key.slice(0, -removeSuffix.length)
+
+        debug(`Suffix removed from ${key} -> ${newKey}`)
+      }
+
+      if (addPrefix.length) {
         debug(`Will add prefix to ${key}`)
 
-        newKey = `${keyPrefix}${key}`
+        newKey = `${addPrefix}${key}`
 
         debug(`Prefix added to ${key} -> ${newKey}`)
       }
 
-      if (convert.length) {
-        newKey = convert === 'lower' ? newKey.toLowerCase() : newKey.toUpperCase()
+      if (addSuffix.length) {
+        debug(`Will add suffix to ${key}`)
+
+        newKey = `${key}${addSuffix}`
+
+        debug(`Suffix added to ${key} -> ${newKey}`)
       }
 
-      if (process.env[newKey]) {
-        if (override) {
-          warning(`Will override "${newKey}" environment variable.`)
-        } else {
-          info(`Will not override secret ${newKey}`)
-
-          continue
-        }
+      if (convert === 'lower') {
+        newKey = newKey.toLowerCase()
       }
 
-      core.exportVariable(newKey, secrets[key])
+      if (convert === 'upper') {
+        newKey = newKey.toUpperCase()
+      }
 
-      core.info(`Exported environment variable: ${newKey}`)
+      const isUnset =
+        typeof process.env[newKey] === 'undefined' || process.env[newKey] === ''
+
+      if (isUnset) {
+        core.exportVariable(newKey, secrets[key])
+
+        core.info(`Exported environment variable: ${newKey}`)
+
+        continue
+      }
+
+      if (override) {
+        warning(`Will override "${newKey}" environment variable.`)
+
+        core.exportVariable(newKey, secrets[key])
+
+        continue
+      }
+
+      warning(`Key "${newKey}" is already set. Will not override environment variable.`)
     }
   } catch (error) {
     if (error instanceof Error) {
