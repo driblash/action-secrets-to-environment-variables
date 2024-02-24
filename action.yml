@@ -1,0 +1,33 @@
+name: "Convert Secrets to Environment Variables"
+description: "Utility Action that exports all GitHub Secrets to Environment Variables with less maintenance overhead"
+inputs:
+  convert:
+    required: false
+    description: "Converts secrets name to a specific string case (default: upper)"
+  exclude:
+    required: false
+    description: "Comma-separated list of secrets to skip exporting"
+  include:
+    required: false
+    description: "Comma-separated list of secrets to export"
+  override:
+    required: false
+    description: "Override existing environment variables (false by default)"
+  prefix:
+    required: false
+    description: "Prefix to add to all secrets, e.g.: SECRET_"
+  remove-prefix:
+    required: false
+    description: "Remove prefix from secrets name, if present"
+  secrets:
+    required: true
+    description: JSON representation of the vars/secrets, use provided placeholder'
+  tracelog:
+    required: false
+    description: "extensive debug logging (false by default)"
+runs:
+  using: "node20"
+  main: "dist/index.js"
+branding:
+  icon: book-open
+  color: orange
