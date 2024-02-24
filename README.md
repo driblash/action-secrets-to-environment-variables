@@ -56,12 +56,12 @@ steps:
 
 ```yaml
 steps:
-- uses: actions/checkout@v3
-- uses: driblash/secrets-to-environment-variables-action@v1
-  with:
-    include: MY_SECRET, MY_OTHER_SECRETS_*
-    secrets: ${{ toJSON(secrets) }}
-- run: echo "Value of MY_SECRET: $MY_SECRET"
+  - uses: actions/checkout@v3
+  - uses: driblash/secrets-to-environment-variables-action@v1
+    with:
+      include: MY_SECRET, MY_OTHER_SECRETS_*
+      secrets: ${{ toJSON(secrets) }}
+  - run: echo "Value $MY_SECRET"
 ```
 
 To export secrets that start with a given string, you can use `include: PREFIX_.+` or `PREFIX_.*`.
@@ -76,24 +76,24 @@ It is possible to add and remove prefixes and suffixes from all the secrets foun
 
 ```yaml
 steps:
-- uses: actions/checkout@v3
-- uses: driblash/secrets-to-environment-variables-action@v1
-  with:
-    add-prefix: PREFIX_
-    secrets: ${{ toJSON(secrets) }}
-- run: echo "Value of MY_SECRET: $PREFIX_MY_SECRET"
+  - uses: actions/checkout@v3
+  - uses: driblash/secrets-to-environment-variables-action@v1
+    with:
+      add-prefix: PREFIX_
+      secrets: ${{ toJSON(secrets) }}
+  - run: echo "Value $PREFIX_MY_SECRET"
 ```
 
 #### Add a suffix to exported secrets
 
 ```yaml
 steps:
-- uses: actions/checkout@v3
-- uses: driblash/secrets-to-environment-variables-action@v1
-  with:
-    add-suffix: _SUFFIX
-    secrets: ${{ toJSON(secrets) }}
-- run: echo "Value of MY_SECRET: $MY_SECRET_SUFFIX"
+  - uses: actions/checkout@v3
+  - uses: driblash/secrets-to-environment-variables-action@v1
+    with:
+      add-suffix: _SUFFIX
+      secrets: ${{ toJSON(secrets) }}
+  - run: echo "Value $MY_SECRET_SUFFIX"
 ```
 
 #### Remove a prefix
@@ -102,12 +102,12 @@ Remove a prefix to all exported secrets, if present.
 
 ```yaml
 steps:
-- uses: actions/checkout@v3
-- uses: driblash/secrets-to-environment-variables-action@v1
-  with:
-    remove-prefix: PREFIX_
-    secrets: ${{ toJSON(secrets) }}
-- run: echo "Value of PREFIX_MY_SECRET: $MY_SECRET"
+  - uses: actions/checkout@v3
+  - uses: driblash/secrets-to-environment-variables-action@v1
+    with:
+      remove-prefix: PREFIX_
+      secrets: ${{ toJSON(secrets) }}
+  - run: echo "Value $MY_SECRET"
 ```
 
 #### Remove a suffix
@@ -116,12 +116,12 @@ Remove a prefix to all exported secrets, if present.
 
 ```yaml
 steps:
-- uses: actions/checkout@v3
-- uses: driblash/secrets-to-environment-variables-action@v1
-  with:
-    remove-suffix: _SUFFIX
-    secrets: ${{ toJSON(secrets) }}
-- run: echo "Value of MY_SECRET_SUFFIX: $MY_SECRET"
+  - uses: actions/checkout@v3
+  - uses: driblash/secrets-to-environment-variables-action@v1
+    with:
+      remove-suffix: _SUFFIX
+      secrets: ${{ toJSON(secrets) }}
+  - run: echo "Value $MY_SECRET"
 ```
 
 ### Overrides already existing variables (default is **false**)
@@ -144,12 +144,12 @@ Converts all exported secrets case to `lower` or `upper`. Default is `upper`.
 
 ```yaml
 steps:
-- uses: actions/checkout@v3
-- uses: driblash/secrets-to-environment-variables-action@v1
-  with:
-    convert: lower
-    secrets: ${{ toJSON(secrets) }}
-- run: echo "Value of my_secret: $my_secret"
+  - uses: actions/checkout@v3
+  - uses: driblash/secrets-to-environment-variables-action@v1
+    with:
+      convert: lower
+      secrets: ${{ toJSON(secrets) }}
+  - run: echo "Value $my_secret"
 ```
 
 ## Contributing
