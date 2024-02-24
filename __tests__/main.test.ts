@@ -86,7 +86,7 @@ describe('secrets-to-env-action', () => {
       })
     })
 
-    it('excludes many variables by Regex Expression', async () => {
+    it('excludes many variables by regex expression', async () => {
       mockInputs({
         secrets: JSON.stringify(inputSecrets),
         exclude: 'SECRET',
@@ -102,6 +102,62 @@ describe('secrets-to-env-action', () => {
       expect(newSecrets).toMatchObject({
         alice_bob: inputSecrets['alice_bob'],
         FOO: inputSecrets['FOO'],
+      })
+    })
+
+    it('excludes many variables by suffix regex expression', async () => {
+      mockInputs({
+        secrets: JSON.stringify(inputSecrets),
+        exclude: '.+_SUFFIX$',
+      })
+
+      await main()
+
+      expect(newSecrets['SECRET_1_SUFFIX']).toBeUndefined()
+      expect(newSecrets['SECRET_2_SUFFIX']).toBeUndefined()
+
+      expect(newSecrets).toMatchObject({
+        alice_bob: inputSecrets['alice_bob'],
+        FOO: inputSecrets['FOO'],
+        PREFIX_SECRET_1: inputSecrets['PREFIX_SECRET_1'],
+        PREFIX_SECRET_2: inputSecrets['PREFIX_SECRET_2'],
+      })
+    })
+
+    it('excludes many variables by prefix regex expression', async () => {
+      mockInputs({
+        secrets: JSON.stringify(inputSecrets),
+        exclude: '^PREFIX_.+',
+      })
+
+      await main()
+
+      expect(newSecrets['PREFIX_SECRET_1']).toBeUndefined()
+      expect(newSecrets['PREFIX_SECRET_2']).toBeUndefined()
+
+      expect(newSecrets).toMatchObject({
+        alice_bob: inputSecrets['alice_bob'],
+        FOO: inputSecrets['FOO'],
+        SECRET_1_SUFFIX: inputSecrets['SECRET_1_SUFFIX'],
+        SECRET_2_SUFFIX: inputSecrets['SECRET_2_SUFFIX'],
+      })
+    })
+
+    it('does not exclude secrets which do not match a regex expression', async () => {
+      mockInputs({
+        secrets: JSON.stringify(inputSecrets),
+        exclude: '^PREFIX_$',
+      })
+
+      await main()
+
+      expect(newSecrets).toMatchObject({
+        alice_bob: inputSecrets['alice_bob'],
+        FOO: inputSecrets['FOO'],
+        SECRET_1_SUFFIX: inputSecrets['SECRET_1_SUFFIX'],
+        SECRET_2_SUFFIX: inputSecrets['SECRET_2_SUFFIX'],
+        PREFIX_SECRET_1: inputSecrets['PREFIX_SECRET_1'],
+        PREFIX_SECRET_2: inputSecrets['PREFIX_SECRET_2'],
       })
     })
   })
@@ -141,7 +197,7 @@ describe('secrets-to-env-action', () => {
       expect(newSecrets['SECRET_2_SUFFIX']).toBeUndefined()
     })
 
-    it('includes many variables by Regex Expression', async () => {
+    it('includes many variables by regex expression', async () => {
       mockInputs({
         secrets: JSON.stringify(inputSecrets),
         include: '_SUFFIX',
@@ -156,6 +212,62 @@ describe('secrets-to-env-action', () => {
       expect(newSecrets['FOO']).toBeUndefined()
       expect(newSecrets['PREFIX_SECRET_1']).toBeUndefined()
       expect(newSecrets['PREFIX_SECRET_2']).toBeUndefined()
+    })
+
+    it('includes many variables by prefix regex expression', async () => {
+      mockInputs({
+        secrets: JSON.stringify(inputSecrets),
+        include: '^PREFIX_.+',
+      })
+
+      await main()
+
+      expect(newSecrets['alice_bob']).toBeUndefined()
+      expect(newSecrets['FOO']).toBeUndefined()
+      expect(newSecrets['SECRET_1_SUFFIX']).toBeUndefined()
+      expect(newSecrets['SECRET_2_SUFFIX']).toBeUndefined()
+
+      expect(newSecrets).toMatchObject({
+        PREFIX_SECRET_1: inputSecrets['PREFIX_SECRET_1'],
+        PREFIX_SECRET_2: inputSecrets['PREFIX_SECRET_2'],
+      })
+    })
+
+    it('includes many variables by suffix regex expression', async () => {
+      mockInputs({
+        secrets: JSON.stringify(inputSecrets),
+        include: '.+_SUFFIX$',
+      })
+
+      await main()
+
+      expect(newSecrets['alice_bob']).toBeUndefined()
+      expect(newSecrets['FOO']).toBeUndefined()
+      expect(newSecrets['PREFIX_SECRET_1']).toBeUndefined()
+      expect(newSecrets['PREFIX_SECRET_2']).toBeUndefined()
+
+      expect(newSecrets).toMatchObject({
+        SECRET_1_SUFFIX: inputSecrets['SECRET_1_SUFFIX'],
+        SECRET_2_SUFFIX: inputSecrets['SECRET_2_SUFFIX'],
+      })
+    })
+
+    it('does not include secrets which do not match a regex expression', async () => {
+      mockInputs({
+        secrets: JSON.stringify(inputSecrets),
+        include: '_SPECIAL_SUFFIX$',
+      })
+
+      await main()
+
+      expect(newSecrets['alice_bob']).toBeUndefined()
+      expect(newSecrets['FOO']).toBeUndefined()
+      expect(newSecrets['PREFIX_SECRET_1']).toBeUndefined()
+      expect(newSecrets['PREFIX_SECRET_2']).toBeUndefined()
+      expect(newSecrets['SECRET_1_SUFFIX']).toBeUndefined()
+      expect(newSecrets['SECRET_2_SUFFIX']).toBeUndefined()
+
+      expect(newSecrets).toMatchObject({})
     })
   })
 
