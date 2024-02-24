@@ -1,39 +1,66 @@
 import * as core from '@actions/core'
 
+function log(level: 'debug' | 'info' | 'warning', ...args: string[]): void {
+  const traceLogValue: string = core.getInput('tracelog')
+  const traceLog = traceLogValue.length ? traceLogValue === 'true' : false
+
+  if (!traceLog) {
+    return
+  }
+
+  for (const msg of args) {
+    core[level](msg)
+  }
+}
+
+function debug(...args: string[]): void {
+  log('debug', ...args)
+}
+
+function info(...args: string[]): void {
+  log('info', ...args)
+}
+
+function warning(...args: string[]): void {
+  log('warning', ...args)
+}
+
 export default async function run(): Promise<void> {
-  let excludeList = [
-    // this variable is already exported automatically
-    'github_token',
-  ]
+  // this variable is already exported automatically
+  let excludeList = ['github_token']
 
   try {
-    const secretsJson: string = core.getInput('secrets', { required: true })
-    const keyPrefix: string = core.getInput('prefix')
-    const includeListStr: string = core.getInput('include')
-    const excludeListStr: string = core.getInput('exclude')
     const convertStr: string = core.getInput('convert')
-    const convert = convertStr.length ? convertStr : 'upper'
     const overrideStr: string = core.getInput('override')
+
+    const convert = convertStr.length ? convertStr : 'upper'
+    const excludeListStr: string = core.getInput('exclude')
+    const includeListStr: string = core.getInput('include')
+    const keyPrefix: string = core.getInput('prefix')
     const override = overrideStr.length ? overrideStr === 'true' : false
     const removePrefix: string = core.getInput('removeprefix')
-    const traceLogStr: string = core.getInput('tracelog')
-    const traceLog = traceLogStr.length ? traceLogStr === 'true' : false
+    const secretsJson: string = core.getInput('secrets', { required: true })
 
     let secrets: Record<string, string>
+
     try {
       secrets = JSON.parse(secretsJson)
     } catch (e) {
-      throw new Error(`Cannot parse JSON secrets.
-Make sure you add the following to this action:
+      throw new Error(`
+        Cannot parse JSON secrets. Are you running our action with "secrets" OR "vars" key value pair?
 
-with:
-      secrets: \${{ toJSON(secrets) }}
-or:
-      secrets: \${{ toJSON(vars) }}
-`)
+        - uses: driblash/secrets-to-environment-variables-action@v2
+        with:
+          secrets: \${{ toJSON(secrets) }}
+
+        - uses: driblash/secrets-to-environment-variables-action@v2
+          with:
+          secrets: \${{ toJSON(vars) }}
+      `)
     }
 
     let includeList: string[] | null = null
+
     if (includeListStr.length) {
       includeList = includeListStr.split(',').map((key) => key.trim())
     }
@@ -44,59 +71,65 @@ or:
       )
     }
 
-    if (traceLog) {
-      core.debug(`Using include list: ${includeList?.join(', ')}`)
-      core.debug(`Using exclude list: ${excludeList.join(', ')}`)
-      core.debug(`Adding prefix: ${keyPrefix}`)
-      core.debug(`Removing prefix: ${removePrefix}`)
-      core.debug(`Override: ${override}`)
-      core.debug(`Convert: ${convert}`)
-    }
+    info(
+      `Using include list: ${includeList?.join(', ')}`,
+      `Using exclude list: ${excludeList.join(', ')}`,
+      `Adding prefix: ${keyPrefix}`,
+      `Removing prefix: ${removePrefix}`,
+      `Override: ${override}`,
+      `Convert: ${convert}`,
+    )
 
     for (const key of Object.keys(secrets)) {
       if (includeList && !includeList.some((inc) => key.match(new RegExp(inc)))) {
-        if (traceLog) core.info(`excluding ${key} as not in includelist`)
+        debug(`Will exclude ${key} as not in includelist`)
+
         continue
       }
 
       if (excludeList.some((inc) => key.match(new RegExp(inc)))) {
-        if (traceLog) core.debug(`excluding ${key} as in excludelist`)
+        debug(`Will exclude ${key} as in excludelist`)
+
         continue
       }
 
       let newKey = key
       if (removePrefix.length && key.startsWith(removePrefix)) {
-        if (traceLog) core.debug(`removing prefix from ${key}`)
+        debug(`Will remove prefix from ${key}`)
+
         newKey = key.slice(removePrefix.length)
-        if (traceLog) core.debug(`prefix removal ${key} -> ${newKey}`)
+
+        debug(`Prefix removed from ${key} -> ${newKey}`)
       } else if (keyPrefix.length) {
-        if (traceLog) core.debug(`adding prefix to ${key}`)
+        debug(`Will add prefix to ${key}`)
+
         newKey = `${keyPrefix}${key}`
-        if (traceLog) core.debug(`prefix add ${key} -> ${newKey}`)
+
+        debug(`Prefix added to ${key} -> ${newKey}`)
       }
 
       if (convert.length) {
-        if (convert === 'lower') {
-          newKey = newKey.toLowerCase()
-        } else {
-          newKey = newKey.toUpperCase()
-        }
+        newKey = convert === 'lower' ? newKey.toLowerCase() : newKey.toUpperCase()
       }
 
       if (process.env[newKey]) {
         if (override) {
-          core.warning(`Will re-write "${newKey}" environment variable.`)
+          warning(`Will override "${newKey}" environment variable.`)
         } else {
-          core.info(`Skip overwriting secret ${newKey}`)
+          info(`Will not override secret ${newKey}`)
+
           continue
         }
       }
 
       core.exportVariable(newKey, secrets[key])
-      core.info(`Exported envvar -> ${newKey}`)
+
+      core.info(`Exported environment variable: ${newKey}`)
     }
   } catch (error) {
-    if (error instanceof Error) core.setFailed(error.message)
+    if (error instanceof Error) {
+      core.setFailed(error.message)
+    }
   }
 }
 

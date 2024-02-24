@@ -1,4 +1,4 @@
-name: "e2e"
+name: "Test E2E"
 on:
   push:
     branches:
@@ -15,7 +15,7 @@ jobs:
         with:
           secrets: ${{ toJSON(vars) }}
           exclude: non-existent,SECRET_2,PFX_+
-          tracelog: 'true'
+          tracelog: "true"
       - name: Verify secrets to env variables (with exclude)
         run: |
           [[ "${SECRET_2}" != "" ]] && echo "SECRET_2 should be unset, got ${SECRET_2}" && exit 1
@@ -32,7 +32,7 @@ jobs:
         uses: ./
         with:
           prefix: PREF_
-          tracelog: 'true'
+          tracelog: "true"
           secrets: ${{ toJSON(vars) }}
           include: non-existent, SECRET_1
       - name: Verify secrets to env variables (with prefix, include)
@@ -54,7 +54,7 @@ jobs:
         uses: ./
         with:
           removeprefix: PFX_
-          tracelog: 'true'
+          tracelog: "true"
           #include: PFX_.+
           secrets: ${{ toJSON(vars) }}
       - name: Verify secrets to env variables (with prefix removal)
@@ -76,7 +76,7 @@ jobs:
       - name: Export secrets to env variables (without override)
         uses: ./
         with:
-          tracelog: 'true'
+          tracelog: "true"
           secrets: ${{ toJSON(vars) }}
           include: SECRET_1
       - name: Verify secrets to env variables (without override)
@@ -92,7 +92,7 @@ jobs:
       - name: Export secrets to env variables (convert)
         uses: ./
         with:
-          tracelog: 'true'
+          tracelog: "true"
           convert: lower
           secrets: ${{ toJSON(vars) }}
       - name: Verify secrets to env variables (convert)
@@ -111,11 +111,11 @@ jobs:
       - name: Bad secrets
         uses: ./
         with:
-          secrets: asdf
+          secrets: this-should-fail-because-it-is-not-converted-to-JSON
         continue-on-error: true
       - name: Bad convert value
         uses: ./
         with:
-          convert: bad
+          convert: this-should-fail-because-it-is-not-a-supported-choice
           secrets: ${{ toJSON(secrets) }}
         continue-on-error: true

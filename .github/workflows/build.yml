@@ -18,17 +18,35 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set Node.js 20.x
-        uses: actions/setup-node@v4
+      - name: Install Node.js
+        uses: actions/setup-node@v3
         with:
-          node-version: 20.x
+          node-version: 16
+
+      - uses: pnpm/action-setup@v3
+        name: Install PNPM
+        with:
+          version: 8
+          run_install: false
+
+      - name: Get PNPM store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - uses: actions/cache@v3
+        name: Setup PNPM cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: pnpm install
 
-      - name: Run build pipeline
-        run: |
-          yarn run all
+      - name: Validate and Bundle
+        run: pnpm validate
 
       - name: Compare the expected and actual dist/ directories
         run: |

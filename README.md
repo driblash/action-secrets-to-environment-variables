@@ -10,10 +10,6 @@ It is possible to control what secrets are imported and how they are exported as
 
 Original credit goes to [oNaiPs](https://github.com/oNaiPs/secrets-to-env-action).
 
-## Node Version
-
-Use `@v1` for NodeJS >= 16 and `@v2` for NodeJS >=20.
-
 ## Usage
 
 Add the following action to your workflow:

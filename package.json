@@ -30,7 +30,7 @@
     "test": "jest",
     "tidy": "run-s 'format:fix' 'lint:fix'",
     "typecheck": "tsc -b",
-    "validate": "run-s 'tidy' 'build' 'test' 'package'",
+    "validate": "rimraf dist && run-s 'tidy' 'build' 'test' 'package'",
     "up:install": "taze major --install && pnpm taze -w && pnpm i",
     "up": "taze major"
   },
