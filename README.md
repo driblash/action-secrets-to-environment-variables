@@ -1,14 +1,14 @@
 # GitHub secrets to environment variables
 
-This action provides the following functionality for GitHub Actions users:
-
-- Read GitHub secrets and export **all** of them as environment variables make them available to Actions within Workflows
+This Action reads your repository's GitHub Secrets and exports them as environment variables make them available to Actions within your Workflows.
 
 It is possible to control what secrets are imported and how they are exported as environment variables.
 
 - Include or exclude secrets (CSV or Regex)
 - Remove or add prefix a all exported environment variables
 - Override already existing variables (default is true)
+
+Original credit goes to [oNaiPs](https://github.com/oNaiPs/secrets-to-env-action).
 
 ## Node Version
 
@@ -125,8 +125,6 @@ steps:
 - run: echo "Value of my_secret: $my_secret"
 ```
 
-## Developing Locally
+## Contributing
 
-```shell
-pnpm install
-```
+Run `pnpm install`, apply desired changes. When you are done. Open a Pull Request and Request a Review. Before the code is pushed we will run `pnpm validate` to ensure the code is working as intended.
