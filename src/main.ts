@@ -30,8 +30,6 @@ export default async function run(): Promise<void> {
   let excludeList = ['github_token']
 
   try {
-    const overrideStr: string = core.getInput('override')
-
     const convert = core.getInput('convert')
     const excludeListStr: string = core.getInput('exclude')
     const includeListStr: string = core.getInput('include')
@@ -39,7 +37,7 @@ export default async function run(): Promise<void> {
     const addSuffix: string = core.getInput('add-suffix')
     const removePrefix: string = core.getInput('remove-prefix')
     const removeSuffix: string = core.getInput('remove-suffix')
-    const override = overrideStr.length ? overrideStr === 'true' : false
+    const override: boolean = core.getInput('override') === 'true'
     const secretsJson: string = core.getInput('secrets', { required: true })
 
     let secrets: Record<string, string>
